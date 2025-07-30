@@ -4,6 +4,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:hive/hive.dart';
 import '../../models/itinerary_model.dart';
 import '../itinerary/itinerary_controller.dart';
+import '../../theme/app_theme.dart';
 
 class GeneratedItineraryPage extends ConsumerStatefulWidget {
   final String originalPrompt;
@@ -33,24 +34,39 @@ class _GeneratedItineraryPageState
     final state = ref.watch(itineraryGenerationControllerProvider);
 
     return Scaffold(
+      backgroundColor: AppTheme.backgroundWhite,
       appBar: AppBar(
-        title: const Text('Generated Itinerary'),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: AppTheme.textPrimary),
+          onPressed: () => Navigator.pop(context),
+        ),
+        title: Text(
+          state.generatedItinerary != null ? 'Home' : 'Home',
+          style: const TextStyle(
+            color: AppTheme.textPrimary,
+            fontSize: 18,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
         actions: [
-          if (state.generatedItinerary != null)
-            IconButton(
-              icon: const Icon(Icons.save),
-              onPressed: () => _saveItinerary(state.generatedItinerary!),
+          CircleAvatar(
+            radius: 20,
+            backgroundColor: AppTheme.accentTeal,
+            child: Text(
+              'S', // You can get user initial here
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+              ),
             ),
+          ),
+          const SizedBox(width: 16),
         ],
       ),
       body: _buildBody(state),
-      floatingActionButton: state.generatedItinerary != null
-          ? FloatingActionButton.extended(
-              onPressed: () => _navigateToChat(),
-              icon: const Icon(Icons.edit),
-              label: const Text('Refine'),
-            )
-          : null,
     );
   }
 
@@ -68,229 +84,280 @@ class _GeneratedItineraryPageState
 
   Widget _buildLoadingWidget(String streamedContent) {
     return Padding(
-      padding: const EdgeInsets.all(16.0),
+      padding: const EdgeInsets.all(24.0),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Row(
+          const Spacer(),
+
+          // Creating Itinerary title
+          Text(
+            'Creating Itinerary...',
+            style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+              fontWeight: FontWeight.bold,
+              color: AppTheme.textPrimary,
+            ),
+          ),
+          const SizedBox(height: 60),
+
+          // Loading indicator
+          const CircularProgressIndicator(
+            valueColor: AlwaysStoppedAnimation<Color>(AppTheme.accentTeal),
+            strokeWidth: 3,
+          ),
+          const SizedBox(height: 32),
+
+          // Status message
+          Text(
+            'Curating a perfect plan for you...',
+            style: Theme.of(
+              context,
+            ).textTheme.bodyLarge?.copyWith(color: AppTheme.textSecondary),
+            textAlign: TextAlign.center,
+          ),
+
+          const Spacer(),
+
+          // Bottom buttons
+          Column(
             children: [
-              CircularProgressIndicator(),
-              SizedBox(width: 16),
-              Text(
-                'Creating your itinerary...',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  onPressed: null, // Disabled during loading
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppTheme.accentTeal.withValues(alpha: 0.3),
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  icon: const Icon(Icons.chat_bubble_outline),
+                  label: const Text(
+                    'Follow up to refine',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 12),
+              SizedBox(
+                width: double.infinity,
+                child: OutlinedButton.icon(
+                  onPressed: null, // Disabled during loading
+                  style: OutlinedButton.styleFrom(
+                    side: BorderSide(color: Colors.grey[400]!),
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  icon: Icon(Icons.download, color: Colors.grey[600]),
+                  label: Text(
+                    'Save Offline',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500,
+                      color: Colors.grey[600],
+                    ),
+                  ),
+                ),
               ),
             ],
           ),
           const SizedBox(height: 24),
-          if (streamedContent.isNotEmpty) ...[
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.grey[100],
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: Colors.grey[300]!),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'AI Response:',
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      color: Colors.grey[700],
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    streamedContent,
-                    style: const TextStyle(fontFamily: 'monospace'),
-                  ),
-                  const SizedBox(height: 8),
-                  Container(
-                    width: 2,
-                    height: 20,
-                    color: Theme.of(context).primaryColor,
-                    child: AnimatedContainer(
-                      duration: const Duration(milliseconds: 500),
-                      decoration: BoxDecoration(
-                        color: Theme.of(context).primaryColor,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
         ],
       ),
     );
   }
 
   Widget _buildItineraryWidget(Itinerary itinerary) {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(16.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Header
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    itinerary.title,
-                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    '${_formatDate(itinerary.startDate)} - ${_formatDate(itinerary.endDate)}',
-                    style: Theme.of(
-                      context,
-                    ).textTheme.bodyLarge?.copyWith(color: Colors.grey[600]),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    '${itinerary.days.length} days',
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: Theme.of(context).primaryColor,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          const SizedBox(height: 16),
-
-          // Days
-          ...itinerary.days.asMap().entries.map((entry) {
-            final dayIndex = entry.key;
-            final day = entry.value;
-            return _buildDayCard(dayIndex + 1, day);
-          }),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildDayCard(int dayNumber, ItineraryDay day) {
-    return Card(
-      margin: const EdgeInsets.only(bottom: 16),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                CircleAvatar(
-                  backgroundColor: Theme.of(context).primaryColor,
-                  radius: 16,
-                  child: Text(
-                    dayNumber.toString(),
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Day $dayNumber',
-                        style: Theme.of(context).textTheme.titleMedium
-                            ?.copyWith(fontWeight: FontWeight.bold),
-                      ),
-                      Text(
-                        _formatDate(day.date),
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: Colors.grey[600],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            Text(
-              day.summary,
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                fontStyle: FontStyle.italic,
-                color: Colors.grey[700],
-              ),
-            ),
-            const SizedBox(height: 16),
-            ...day.items.map((item) => _buildItineraryItem(item)),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildItineraryItem(ItineraryItem item) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            width: 60,
-            padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
-            decoration: BoxDecoration(
-              color: Theme.of(context).primaryColor.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Text(
-              item.time,
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                color: Theme.of(context).primaryColor,
-                fontSize: 12,
-              ),
-              textAlign: TextAlign.center,
-            ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
+    return Column(
+      children: [
+        Expanded(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(24.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  item.activity,
-                  style: const TextStyle(fontWeight: FontWeight.w500),
-                ),
-                const SizedBox(height: 4),
+                // Title with emoji
                 Row(
                   children: [
-                    Icon(Icons.location_on, size: 16, color: Colors.grey[600]),
-                    const SizedBox(width: 4),
                     Expanded(
                       child: Text(
-                        item.location,
-                        style: TextStyle(color: Colors.grey[600], fontSize: 13),
-                      ),
-                    ),
-                    IconButton(
-                      icon: const Icon(Icons.map, size: 20),
-                      onPressed: () => _openInMaps(item.location),
-                      style: IconButton.styleFrom(
-                        minimumSize: const Size(32, 32),
-                        padding: EdgeInsets.zero,
+                        'Itinerary Created 🏝️',
+                        style: Theme.of(context).textTheme.headlineMedium
+                            ?.copyWith(
+                              fontWeight: FontWeight.bold,
+                              color: AppTheme.textPrimary,
+                            ),
                       ),
                     ),
                   ],
                 ),
+                const SizedBox(height: 32),
+
+                // Days
+                ...itinerary.days.asMap().entries.map((entry) {
+                  final dayIndex = entry.key;
+                  final day = entry.value;
+                  return _buildDaySection(dayIndex + 1, day);
+                }),
+
+                // Flight info at bottom
+                const SizedBox(height: 24),
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.grey[50],
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: Colors.grey[200]!),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(
+                        Icons.location_pin,
+                        color: Colors.red,
+                        size: 20,
+                      ),
+                      const SizedBox(width: 8),
+                      InkWell(
+                        onTap: () => _openInMaps(''),
+                        child: const Text(
+                          'Open in maps',
+                          style: TextStyle(
+                            color: Colors.blue,
+                            decoration: TextDecoration.underline,
+                            fontSize: 16,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      const Text('📍'),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  'Mumbai to Bali, Indonesia | 11hrs 5mins',
+                  style: TextStyle(color: Colors.grey[600], fontSize: 14),
+                ),
+                const SizedBox(height: 80), // Space for bottom buttons
               ],
+            ),
+          ),
+        ),
+
+        // Bottom action buttons
+        Container(
+          padding: const EdgeInsets.all(24),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.grey.withValues(alpha: 0.1),
+                spreadRadius: 1,
+                blurRadius: 10,
+                offset: const Offset(0, -2),
+              ),
+            ],
+          ),
+          child: Column(
+            children: [
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  onPressed: () => _navigateToChat(),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppTheme.accentTeal,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  icon: const Icon(Icons.chat_bubble_outline),
+                  label: const Text(
+                    'Follow up to refine',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 12),
+              SizedBox(
+                width: double.infinity,
+                child: OutlinedButton.icon(
+                  onPressed: () => _saveItinerary(itinerary),
+                  style: OutlinedButton.styleFrom(
+                    side: const BorderSide(color: AppTheme.textSecondary),
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  icon: const Icon(
+                    Icons.download,
+                    color: AppTheme.textSecondary,
+                  ),
+                  label: const Text(
+                    'Save Offline',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500,
+                      color: AppTheme.textSecondary,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildDaySection(int dayNumber, ItineraryDay day) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 24),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Day $dayNumber: ${day.summary}',
+            style: const TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: AppTheme.textPrimary,
+            ),
+          ),
+          const SizedBox(height: 12),
+          ...day.items.map(
+            (item) => Padding(
+              padding: const EdgeInsets.only(left: 0, bottom: 8),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    margin: const EdgeInsets.only(top: 8, right: 8),
+                    width: 4,
+                    height: 4,
+                    decoration: const BoxDecoration(
+                      color: AppTheme.textPrimary,
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                  Expanded(
+                    child: Text(
+                      '${item.time}: ${item.activity}${item.location.isNotEmpty ? ' at ${item.location}' : ''}',
+                      style: const TextStyle(
+                        fontSize: 16,
+                        color: AppTheme.textPrimary,
+                        height: 1.5,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ],
@@ -334,10 +401,6 @@ class _GeneratedItineraryPageState
         ),
       ),
     );
-  }
-
-  String _formatDate(DateTime date) {
-    return '${date.day}/${date.month}/${date.year}';
   }
 
   Future<void> _openInMaps(String location) async {

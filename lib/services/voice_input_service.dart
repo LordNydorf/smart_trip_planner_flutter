@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
+import 'package:permission_handler/permission_handler.dart';
 
 class VoiceInputService {
   static final VoiceInputService _instance = VoiceInputService._internal();
@@ -38,7 +39,16 @@ class VoiceInputService {
     if (!_isInitialized) {
       await initialize();
     }
-    return _isInitialized && await _speech.hasPermission;
+
+    // Check if we already have permission
+    final status = await Permission.microphone.status;
+    if (status.isGranted) {
+      return true;
+    }
+
+    // Request permission using system dialog
+    final result = await Permission.microphone.request();
+    return result.isGranted;
   }
 
   Future<void> startListening({
@@ -163,7 +173,15 @@ class _VoiceInputButtonState extends State<VoiceInputButton>
   Future<void> _startListening() async {
     final hasPermission = await _voiceService.checkPermissions();
     if (!hasPermission) {
-      _showPermissionDialog();
+      // Permission was denied, show a simple snackbar
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Microphone permission is required for voice input'),
+            duration: Duration(seconds: 2),
+          ),
+        );
+      }
       return;
     }
 
@@ -207,24 +225,6 @@ class _VoiceInputButtonState extends State<VoiceInputButton>
       _partialText = '';
     });
     _animationController.reverse();
-  }
-
-  void _showPermissionDialog() {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Microphone Permission'),
-        content: const Text(
-          'This app needs microphone permission to convert speech to text. Please enable it in your device settings.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('OK'),
-          ),
-        ],
-      ),
-    );
   }
 
   void _showErrorDialog() {

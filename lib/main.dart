@@ -3,6 +3,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'firebase_options.dart';
+import 'theme/app_theme.dart';
 import 'features/auth/auth_controller.dart';
 import 'features/auth/pages/sign_in_page.dart';
 import 'features/auth/pages/sign_up_page.dart';
@@ -40,11 +41,8 @@ class MyApp extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return MaterialApp(
-      title: 'Smart Trip Planner',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-        useMaterial3: true,
-      ),
+      title: 'Itinera AI',
+      theme: AppTheme.lightTheme,
       home: const AuthWrapper(),
       routes: {
         '/sign-in': (context) => const SignInPage(),

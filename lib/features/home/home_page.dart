@@ -4,7 +4,7 @@ import 'package:hive_flutter/hive_flutter.dart';
 import '../auth/auth_controller.dart';
 import '../../models/itinerary_model.dart';
 import '../../services/voice_input_service.dart';
-import '../../services/offline_mode_service.dart';
+import '../../theme/app_theme.dart';
 
 class HomePage extends ConsumerStatefulWidget {
   const HomePage({super.key});
@@ -28,122 +28,192 @@ class _HomePageState extends ConsumerState<HomePage> {
     final savedTripsBox = Hive.box('savedTrips');
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          'Hey${user?.displayName != null ? ', ${user!.displayName}' : ''}!',
-        ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.person),
-            onPressed: () {
-              Navigator.pushNamed(context, '/profile');
-            },
-          ),
-        ],
-      ),
-      body: Column(
-        children: [
-          const OfflineStatusBanner(),
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
+      backgroundColor: AppTheme.backgroundWhite,
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(24.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              // Header with greeting and profile icon
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  TextField(
-                    controller: _promptController,
-                    decoration: InputDecoration(
-                      labelText: 'Describe your trip',
-                      hintText:
-                          'e.g., A weekend in Paris with museums and cafes',
-                      border: const OutlineInputBorder(),
-                      suffixIcon: VoiceInputButton(
-                        onResult: (result) {
-                          _promptController.text = result;
-                        },
-                        tooltip: 'Voice input',
-                      ),
-                    ),
-                    maxLines: 3,
-                  ),
-                  const SizedBox(height: 16),
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton.icon(
-                      onPressed: _createItinerary,
-                      icon: const Icon(Icons.rocket_launch),
-                      label: const Text('Create My Itinerary'),
-                      style: ElevatedButton.styleFrom(
-                        padding: const EdgeInsets.all(16),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 32),
-                  Text(
-                    'Offline Saved Itineraries',
-                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 16),
                   Expanded(
-                    child: ValueListenableBuilder(
-                      valueListenable: savedTripsBox.listenable(),
-                      builder: (context, Box box, _) {
-                        if (box.isEmpty) {
-                          return const Center(
-                            child: Text('No saved itineraries yet.'),
-                          );
-                        }
-
-                        return ListView.builder(
-                          itemCount: box.length,
-                          itemBuilder: (context, index) {
-                            final trip = box.getAt(index);
-                            return Card(
-                              child: ListTile(
-                                title: Text(
-                                  trip is Itinerary
-                                      ? trip.title
-                                      : trip['title'] ?? 'Untitled Trip',
-                                ),
-                                subtitle: Text(
-                                  trip is Itinerary
-                                      ? '${trip.days.length} days • ${_formatDate(trip.startDate)}'
-                                      : trip['description'] ?? 'No description',
-                                ),
-                                leading: CircleAvatar(
-                                  backgroundColor: Theme.of(
-                                    context,
-                                  ).primaryColor,
-                                  child: const Icon(
-                                    Icons.flight_takeoff,
-                                    color: Colors.white,
-                                  ),
-                                ),
-                                trailing: const Icon(Icons.chevron_right),
-                                onTap: () {
-                                  // TODO: Navigate to trip details
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
-                                      content: Text(
-                                        'Trip details feature coming soon!',
-                                      ),
-                                    ),
-                                  );
-                                },
-                              ),
-                            );
-                          },
-                        );
-                      },
+                    child: RichText(
+                      text: TextSpan(
+                        style: const TextStyle(
+                          fontSize: 32,
+                          fontWeight: FontWeight.bold,
+                          color: AppTheme.accentTeal,
+                        ),
+                        children: [
+                          const TextSpan(text: 'Hey '),
+                          TextSpan(
+                            text:
+                                user?.displayName?.split(' ').first ?? 'there',
+                          ),
+                          const TextSpan(text: ' 👋'),
+                        ],
+                      ),
+                    ),
+                  ),
+                  InkWell(
+                    onTap: () {
+                      Navigator.pushNamed(context, '/profile');
+                    },
+                    borderRadius: BorderRadius.circular(24),
+                    child: CircleAvatar(
+                      radius: 24,
+                      backgroundColor: AppTheme.accentTeal,
+                      child: Text(
+                        user?.displayName?.isNotEmpty == true
+                            ? user!.displayName![0].toUpperCase()
+                            : 'S',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                     ),
                   ),
                 ],
               ),
-            ),
+              const SizedBox(height: 60),
+
+              // Main question
+              Text(
+                'What\'s your vision for this trip?',
+                style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                  fontWeight: FontWeight.bold,
+                  color: AppTheme.textPrimary,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 40),
+
+              // Large text input area with teal border
+              Container(
+                decoration: BoxDecoration(
+                  border: Border.all(color: AppTheme.accentTeal, width: 2),
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Stack(
+                  children: [
+                    TextField(
+                      controller: _promptController,
+                      decoration: const InputDecoration(
+                        hintText:
+                            '7 days in Bali next April, 3 people, mid-range budget, wanted to explore less populated areas, it should be a peaceful trip!',
+                        hintStyle: TextStyle(color: Colors.grey, fontSize: 16),
+                        border: InputBorder.none,
+                        contentPadding: EdgeInsets.fromLTRB(20, 20, 60, 20),
+                      ),
+                      maxLines: null,
+                      minLines: 5,
+                      style: const TextStyle(fontSize: 16),
+                      textCapitalization: TextCapitalization.sentences,
+                    ),
+                    Positioned(
+                      bottom: 8,
+                      right: 8,
+                      child: VoiceInputButton(
+                        onResult: (result) {
+                          _promptController.text = result;
+                        },
+                        tooltip: 'Voice input',
+                        activeColor: AppTheme.accentTeal,
+                        inactiveColor: Colors.grey[600],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 32),
+
+              // Create My Itinerary button
+              ElevatedButton(
+                onPressed: _createItinerary,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppTheme.accentTeal,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 20),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                ),
+                child: const Text(
+                  'Create My Itinerary',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+                ),
+              ),
+              const SizedBox(height: 48),
+
+              // Offline Saved Itineraries section
+              Text(
+                'Offline Saved Itineraries',
+                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                  fontWeight: FontWeight.bold,
+                  color: AppTheme.textPrimary,
+                ),
+              ),
+              const SizedBox(height: 16),
+
+              // Saved itineraries list
+              ValueListenableBuilder(
+                valueListenable: savedTripsBox.listenable(),
+                builder: (context, Box box, _) {
+                  if (box.isEmpty) {
+                    return const SizedBox.shrink();
+                  }
+
+                  return Column(
+                    children: List.generate(box.length, (index) {
+                      final trip = box.getAt(index);
+                      return Container(
+                        margin: const EdgeInsets.only(bottom: 12),
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: Colors.grey[300]!),
+                        ),
+                        child: Row(
+                          children: [
+                            Container(
+                              width: 8,
+                              height: 8,
+                              decoration: const BoxDecoration(
+                                color: AppTheme.accentTeal,
+                                shape: BoxShape.circle,
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Text(
+                                trip is Itinerary
+                                    ? '${trip.title}, ${trip.days.length} days vacation'
+                                    : trip['title'] ?? 'Untitled Trip',
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                  color: AppTheme.textPrimary,
+                                ),
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    }),
+                  );
+                },
+              ),
+              const SizedBox(height: 24),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
@@ -158,9 +228,5 @@ class _HomePageState extends ConsumerState<HomePage> {
     }
 
     Navigator.pushNamed(context, '/generate-itinerary', arguments: prompt);
-  }
-
-  String _formatDate(DateTime date) {
-    return '${date.day}/${date.month}/${date.year}';
   }
 }

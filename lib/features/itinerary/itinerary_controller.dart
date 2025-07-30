@@ -7,7 +7,8 @@ import '../../services/offline_mode_service.dart';
 // LLM Service Provider
 final llmServiceProvider = Provider<LLMService>((ref) {
   return LLMService(
-    apiKey: 'your-api-key-here', // TODO: Load from secure storage
+    apiKey:
+        'sk-your-actual-openai-api-key-here', // Replace with your OpenAI API key
     provider: 'openai', // or 'gemini'
   );
 });

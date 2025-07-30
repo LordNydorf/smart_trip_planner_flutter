@@ -51,6 +51,16 @@ class AuthController extends StateNotifier<User?> {
     }
   }
 
+  Future<void> resetPassword(String email) async {
+    try {
+      await _ref
+          .read(firebaseAuthProvider)
+          .sendPasswordResetEmail(email: email);
+    } catch (e) {
+      throw Exception('Failed to send password reset email: $e');
+    }
+  }
+
   Future<void> signInWithGoogle() async {
     try {
       final googleUser = await _googleSignIn.signIn();

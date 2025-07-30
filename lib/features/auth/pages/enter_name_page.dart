@@ -50,8 +50,9 @@ class _EnterNamePageState extends ConsumerState<EnterNamePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: true,
       body: SafeArea(
-        child: Padding(
+        child: SingleChildScrollView(
           padding: const EdgeInsets.all(24.0),
           child: Form(
             key: _formKey,
@@ -115,7 +116,9 @@ class _EnterNamePageState extends ConsumerState<EnterNamePage> {
                         )
                       : const Text('Continue'),
                 ),
-                const Spacer(),
+
+                // Add some space to push the skip button down
+                SizedBox(height: MediaQuery.of(context).size.height * 0.3),
 
                 // Skip Button
                 TextButton(
@@ -126,6 +129,7 @@ class _EnterNamePageState extends ConsumerState<EnterNamePage> {
                         ).pushNamedAndRemoveUntil('/', (route) => false),
                   child: const Text('Skip for now'),
                 ),
+                const SizedBox(height: 24), // Extra bottom padding
               ],
             ),
           ),
