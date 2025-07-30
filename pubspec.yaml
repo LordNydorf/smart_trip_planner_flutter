@@ -29,7 +29,7 @@ dependencies:
   connectivity_plus: ^6.1.4
   google_sign_in: ^6.1.0
   flutter_riverpod: ^2.6.1
-  speech_to_text: 6.3.0
+  speech_to_text: 7.1.0
   permission_handler: ^11.3.1
   
 

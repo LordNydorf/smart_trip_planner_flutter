@@ -71,9 +71,11 @@ class VoiceInputService {
           }
         },
         localeId: locale,
-        partialResults: onPartialResult != null,
-        cancelOnError: true,
-        listenMode: stt.ListenMode.confirmation,
+        listenOptions: stt.SpeechListenOptions(
+          partialResults: onPartialResult != null,
+          cancelOnError: true,
+          listenMode: stt.ListenMode.confirmation,
+        ),
       );
     } catch (e) {
       debugPrint('Error starting speech recognition: $e');
