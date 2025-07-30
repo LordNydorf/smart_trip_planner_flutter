@@ -41,7 +41,8 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions web = FirebaseOptions(
-    apiKey: 'AIzaSyCi1ginTmZ8mFhoP5GHYbzMbuijEds_tc4',
+    apiKey:
+        'AIzaSyCi1ginTmZ8mFhoP5GHYbzMbuijEds_tc4', // ConfigService.firebaseWebApiKey, // Note: Use env vars in production
     appId: '1:608392516852:web:a57862c94b42367e87baa1',
     messagingSenderId: '608392516852',
     projectId: 'smart-trip-planner-flutter',
@@ -51,7 +52,8 @@ class DefaultFirebaseOptions {
   );
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyBX8IwcEF00JKednTMYvRKPtmqiVbQ-Qp4',
+    apiKey:
+        'AIzaSyBX8IwcEF00JKednTMYvRKPtmqiVbQ-Qp4', // ConfigService.firebaseAndroidApiKey, // Note: Use env vars in production
     appId: '1:608392516852:android:1fb53d115d5a90d087baa1',
     messagingSenderId: '608392516852',
     projectId: 'smart-trip-planner-flutter',
@@ -59,7 +61,8 @@ class DefaultFirebaseOptions {
   );
 
   static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'AIzaSyBxVxP5sIVREaHBKpmovqZEpayLmL1hDeI',
+    apiKey:
+        'AIzaSyBxVxP5sIVREaHBKpmovqZEpayLmL1hDeI', // ConfigService.firebaseIosApiKey, // Note: Use env vars in production
     appId: '1:608392516852:ios:286217b3414f3e5b87baa1',
     messagingSenderId: '608392516852',
     projectId: 'smart-trip-planner-flutter',
@@ -68,7 +71,8 @@ class DefaultFirebaseOptions {
   );
 
   static const FirebaseOptions macos = FirebaseOptions(
-    apiKey: 'AIzaSyBxVxP5sIVREaHBKpmovqZEpayLmL1hDeI',
+    apiKey:
+        'AIzaSyBxVxP5sIVREaHBKpmovqZEpayLmL1hDeI', // ConfigService.firebaseIosApiKey, // Note: Use env vars in production
     appId: '1:608392516852:ios:286217b3414f3e5b87baa1',
     messagingSenderId: '608392516852',
     projectId: 'smart-trip-planner-flutter',
@@ -77,7 +81,8 @@ class DefaultFirebaseOptions {
   );
 
   static const FirebaseOptions windows = FirebaseOptions(
-    apiKey: 'AIzaSyCi1ginTmZ8mFhoP5GHYbzMbuijEds_tc4',
+    apiKey:
+        'AIzaSyCi1ginTmZ8mFhoP5GHYbzMbuijEds_tc4', // ConfigService.firebaseWebApiKey, // Note: Use env vars in production
     appId: '1:608392516852:web:ba0c8f5d8736e81c87baa1',
     messagingSenderId: '608392516852',
     projectId: 'smart-trip-planner-flutter',

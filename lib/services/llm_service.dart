@@ -2,13 +2,12 @@ import 'dart:convert';
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
+import 'package:google_generative_ai/google_generative_ai.dart';
 import '../models/itinerary_model.dart';
 import 'error_handler.dart';
 
 class LLMService {
   static const String _openAIBaseUrl = 'https://api.openai.com/v1';
-  static const String _geminiBaseUrl =
-      'https://generativelanguage.googleapis.com/v1beta';
 
   final String apiKey;
   final String provider; // 'openai' or 'gemini'
@@ -97,35 +96,23 @@ Return ONLY a valid JSON object in this exact format:
   }
 
   Stream<String> _streamGemini(String systemPrompt, String userPrompt) async* {
-    // For now, we'll implement a simple non-streaming version for Gemini
-    // You can enhance this with actual Gemini streaming later
-    final response = await http.post(
-      Uri.parse(
-        '$_geminiBaseUrl/models/gemini-pro:generateContent?key=$apiKey',
-      ),
-      headers: {'Content-Type': 'application/json'},
-      body: jsonEncode({
-        'contents': [
-          {
-            'parts': [
-              {'text': '$systemPrompt\n\nUser request: $userPrompt'},
-            ],
-          },
-        ],
-      }),
-    );
+    try {
+      final model = GenerativeModel(model: 'gemini-pro', apiKey: apiKey);
 
-    if (response.statusCode == 200) {
-      final data = jsonDecode(response.body);
-      final content = data['candidates'][0]['content']['parts'][0]['text'];
+      final prompt = '$systemPrompt\n\nUser request: $userPrompt';
+      final content = [Content.text(prompt)];
 
-      // Simulate streaming by yielding chunks
-      for (int i = 0; i < content.length; i += 10) {
-        yield content.substring(i, (i + 10).clamp(0, content.length));
-        await Future.delayed(const Duration(milliseconds: 50));
+      // Use streaming for better user experience
+      final response = model.generateContentStream(content);
+
+      await for (final chunk in response) {
+        final text = chunk.text;
+        if (text != null) {
+          yield text;
+        }
       }
-    } else {
-      throw Exception('Gemini API error: ${response.statusCode}');
+    } catch (e) {
+      throw Exception('Gemini API error: $e');
     }
   }
 

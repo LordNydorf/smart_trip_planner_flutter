@@ -1,16 +1,13 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../services/llm_service.dart';
+import '../../services/config_service.dart';
 import '../../models/itinerary_model.dart';
 import '../../services/error_handler.dart';
 import '../../services/offline_mode_service.dart';
 
 // LLM Service Provider
 final llmServiceProvider = Provider<LLMService>((ref) {
-  return LLMService(
-    apiKey:
-        'sk-your-actual-openai-api-key-here', // Replace with your OpenAI API key
-    provider: 'openai', // or 'gemini'
-  );
+  return LLMService(apiKey: ConfigService.geminiApiKey, provider: 'gemini');
 });
 
 // Itinerary Generation State

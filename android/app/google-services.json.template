@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "608392516852",
+    "project_id": "smart-trip-planner-flutter",
+    "storage_bucket": "smart-trip-planner-flutter.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:608392516852:android:1fb53d115d5a90d087baa1",
+        "android_client_info": {
+          "package_name": "com.example.smart_trip_planner_flutter"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "608392516852-9vha5kk46j6t9hg6m8q9abjqhgjnh32p.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "YOUR_FIREBASE_ANDROID_API_KEY_HERE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "608392516852-9vha5kk46j6t9hg6m8q9abjqhgjnh32p.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
