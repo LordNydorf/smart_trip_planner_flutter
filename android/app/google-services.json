@@ -1,0 +1,54 @@
+{
+  "project_info": {
+    "project_number": "608392516852",
+    "project_id": "smart-trip-planner-flutter",
+    "storage_bucket": "smart-trip-planner-flutter.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:608392516852:android:1fb53d115d5a90d087baa1",
+        "android_client_info": {
+          "package_name": "com.example.smart_trip_planner_flutter"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "608392516852-i0jpo8v6g730g7ivhqgh5dde2sprr56e.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.smart_trip_planner_flutter",
+            "certificate_hash": "a75d5b6aa0586de41abe6b3edaa11435d31953a1"
+          }
+        },
+        {
+          "client_id": "608392516852-rrqlctlfr0u6nc5q28fgtj6vbtjhiirp.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBX8IwcEF00JKednTMYvRKPtmqiVbQ-Qp4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "608392516852-rrqlctlfr0u6nc5q28fgtj6vbtjhiirp.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "608392516852-b1lgdep0hhvre9qk18jj221drukojokg.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.smartTripPlannerFlutter"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
