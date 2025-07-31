@@ -161,9 +161,8 @@ class _SignInPageState extends ConsumerState<SignInPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppTheme.backgroundWhite,
-      resizeToAvoidBottomInset: true,
       body: SafeArea(
-        child: SingleChildScrollView(
+        child: Padding(
           padding: const EdgeInsets.all(24.0),
           child: Form(
             key: _formKey,
@@ -332,7 +331,7 @@ class _SignInPageState extends ConsumerState<SignInPage> {
                           ),
                         ),
                 ),
-                const SizedBox(height: 24),
+                const Spacer(),
 
                 // Sign Up Link
                 Row(
@@ -353,7 +352,6 @@ class _SignInPageState extends ConsumerState<SignInPage> {
                     ),
                   ],
                 ),
-                const SizedBox(height: 24), // Extra bottom padding
               ],
             ),
           ),

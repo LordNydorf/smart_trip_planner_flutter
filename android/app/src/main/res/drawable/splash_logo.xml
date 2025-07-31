@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Placeholder splash logo - vector drawable -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="200dp"
+    android:height="200dp"
+    android:viewportWidth="200"
+    android:viewportHeight="200">
+    
+    <!-- Background circle -->
+    <path
+        android:fillColor="#2a2a2a"
+        android:pathData="M100,100m-80,0a80,80 0,1 1,160 0a80,80 0,1 1,-160 0"/>
+    
+    <!-- Airplane icon -->
+    <path
+        android:fillColor="#FDC935"
+        android:pathData="M100,60L120,100L140,95L130,110L120,105L100,140L80,105L70,110L60,95L80,100L100,60Z"/>
+    
+    <!-- Text: Itinera -->
+    <path
+        android:fillColor="#4ECDC4"
+        android:pathData="M60,150L65,150L65,170L60,170L60,150Z"/>
+    
+    <path
+        android:fillColor="#4ECDC4"
+        android:pathData="M70,150L85,150L85,155L75,155L75,160L85,160L85,165L75,165L75,170L70,170L70,150Z"/>
+    
+    <!-- AI text -->
+    <path
+        android:fillColor="#4ECDC4"
+        android:pathData="M90,150L105,150L105,155L95,155L95,160L105,160L105,165L95,165L95,170L90,170L90,150Z"/>
+    
+    <path
+        android:fillColor="#4ECDC4"
+        android:pathData="M110,150L115,150L115,170L110,170L110,150Z"/>
+</vector>

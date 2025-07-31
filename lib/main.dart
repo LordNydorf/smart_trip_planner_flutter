@@ -5,6 +5,7 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'firebase_options.dart';
 import 'theme/app_theme.dart';
+import 'services/system_ui_service.dart';
 import 'features/auth/auth_controller.dart';
 import 'features/auth/pages/sign_in_page.dart';
 import 'features/auth/pages/sign_up_page.dart';
@@ -13,10 +14,15 @@ import 'features/home/home_page.dart';
 import 'features/itinerary/generated_itinerary_page.dart';
 import 'features/chat/follow_up_chat_page.dart';
 import 'features/profile/profile_page.dart';
+import 'features/splash/splash_screen.dart';
 import 'models/itinerary_model.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Configure system UI using our service
+  SystemUIService.setLightSystemUI();
+  SystemUIService.setEdgeToEdgeMode();
 
   // Load environment variables
   await dotenv.load(fileName: ".env");
@@ -47,7 +53,7 @@ class MyApp extends ConsumerWidget {
     return MaterialApp(
       title: 'Itinera AI',
       theme: AppTheme.lightTheme,
-      home: const AuthWrapper(),
+      home: const SplashWrapper(),
       routes: {
         '/sign-in': (context) => const SignInPage(),
         '/sign-up': (context) => const SignUpPage(),
@@ -76,6 +82,32 @@ class MyApp extends ConsumerWidget {
         }
       },
     );
+  }
+}
+
+class SplashWrapper extends ConsumerStatefulWidget {
+  const SplashWrapper({super.key});
+
+  @override
+  ConsumerState<SplashWrapper> createState() => _SplashWrapperState();
+}
+
+class _SplashWrapperState extends ConsumerState<SplashWrapper> {
+  bool _showSplash = true;
+
+  @override
+  Widget build(BuildContext context) {
+    if (_showSplash) {
+      return SplashScreen(
+        onComplete: () {
+          setState(() {
+            _showSplash = false;
+          });
+        },
+      );
+    }
+
+    return const AuthWrapper();
   }
 }
 
