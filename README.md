@@ -9,9 +9,9 @@ The Smart Trip Planner follows clean architecture principles with clear separati
 ```mermaid
 graph TB
     UI[Flutter UI Layer] --> BL[Business Logic Layer]
-    BL --> Services[Services Layer]
-    Services --> API[External APIs]
-    Services --> LocalStorage[Local Storage]
+    BL --> ServicesLayer[Services Layer]
+    ServicesLayer --> API[External APIs]
+    ServicesLayer --> LocalStorage[Local Storage]
     
     subgraph "UI Layer"
         UI --> Auth[Auth Pages]
@@ -28,12 +28,12 @@ graph TB
     end
     
     subgraph "Services"
-        Services --> LLM[LLM Service]
-        Services --> TokenCounter[Token Counter]
-        Services --> Location[Location Service]
-        Services --> Voice[Voice Input Service]
-        Services --> Offline[Offline Mode Service]
-        Services --> ErrorHandler[Error Handler]
+        ServicesLayer --> LLM[LLM Service]
+        ServicesLayer --> TokenCounter[Token Counter]
+        ServicesLayer --> Location[Location Service]
+        ServicesLayer --> Voice[Voice Input Service]
+        ServicesLayer --> Offline[Offline Mode Service]
+        ServicesLayer --> ErrorHandler[Error Handler]
     end
     
     subgraph "External APIs"
