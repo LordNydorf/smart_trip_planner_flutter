@@ -11,7 +11,7 @@ graph TB
     UI[Flutter UI Layer] --> BL[Business Logic Layer]
     BL --> Services[Services Layer]
     Services --> API[External APIs]
-    Services --> Storage[Local Storage]
+    Services --> LocalStorage[Local Storage]
     
     subgraph "UI Layer"
         UI --> Auth[Auth Pages]
@@ -43,8 +43,8 @@ graph TB
     end
     
     subgraph "Storage"
-        Storage --> Hive[Hive Local DB]
-        Storage --> Prefs[Shared Preferences]
+        LocalStorage --> Hive[Hive Local DB]
+        LocalStorage --> Prefs[Shared Preferences]
     end
 ```
 
