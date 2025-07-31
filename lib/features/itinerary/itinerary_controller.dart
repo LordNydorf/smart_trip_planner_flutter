@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter/foundation.dart';
 import '../../services/llm_service.dart';
 import '../../services/config_service.dart';
 import '../../models/itinerary_model.dart';
@@ -102,10 +103,13 @@ Return ONLY a valid JSON object in the exact format specified.
         );
       }
     } catch (e) {
+      debugPrint('Itinerary generation error: $e');
       final appError = ErrorHandler.handleError(e);
+      final errorMessage = ErrorHandler.getErrorMessage(appError);
+
       state = state.copyWith(
         isLoading: false,
-        error: ErrorHandler.getErrorMessage(appError),
+        error: 'Failed to generate itinerary: $errorMessage',
       );
     }
   }

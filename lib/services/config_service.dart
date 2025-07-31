@@ -40,6 +40,10 @@ class ConfigService {
         'AIzaSyBxVxP5sIVREaHBKpmovqZEpayLmL1hDeI';
   }
 
+  static String get googleMapsApiKey {
+    return dotenv.env['GOOGLE_MAPS_API_KEY'] ?? '';
+  }
+
   /// Check if API keys are properly configured
   static bool get hasGeminiKey =>
       dotenv.env['GEMINI_API_KEY']?.isNotEmpty ?? false;

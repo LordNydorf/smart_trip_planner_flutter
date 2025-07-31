@@ -40,15 +40,9 @@ class VoiceInputService {
       await initialize();
     }
 
-    // Check if we already have permission
+    // Check if speech recognition is available and permissions are granted
     final status = await Permission.microphone.status;
-    if (status.isGranted) {
-      return true;
-    }
-
-    // Request permission using system dialog
-    final result = await Permission.microphone.request();
-    return result.isGranted;
+    return status.isGranted && _isInitialized;
   }
 
   Future<void> startListening({
@@ -171,14 +165,38 @@ class _VoiceInputButtonState extends State<VoiceInputButton>
   }
 
   Future<void> _startListening() async {
+    // Always request permission explicitly when button is clicked
+    // This ensures the system permission dialog appears
+    final permissionStatus = await Permission.microphone.status;
+
+    if (!permissionStatus.isGranted) {
+      // Show system permission dialog
+      final result = await Permission.microphone.request();
+      if (!result.isGranted) {
+        // Permission was denied, show a helpful message
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text(
+                'Microphone permission is required for voice input',
+              ),
+              duration: Duration(seconds: 3),
+            ),
+          );
+        }
+        return;
+      }
+    }
+
+    // Now check if speech recognition is available
     final hasPermission = await _voiceService.checkPermissions();
     if (!hasPermission) {
-      // Permission was denied, show a simple snackbar
+      // Speech recognition not available
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Microphone permission is required for voice input'),
-            duration: Duration(seconds: 2),
+            content: Text('Speech recognition is not available on this device'),
+            duration: Duration(seconds: 3),
           ),
         );
       }

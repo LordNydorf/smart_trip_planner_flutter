@@ -24,7 +24,9 @@ class LLMService {
 
     final systemPrompt = '''
 You are a travel planner AI. Create a detailed travel itinerary based on the user's request.
-Return ONLY a valid JSON object in this exact format:
+Return ONLY a valid JSON object without any markdown formatting, code blocks, or additional text.
+Do NOT wrap the response in ```json or ``` blocks.
+Use this exact format:
 {
   "title": "Trip Title",
   "startDate": "YYYY-MM-DD",
@@ -96,29 +98,80 @@ Return ONLY a valid JSON object in this exact format:
   }
 
   Stream<String> _streamGemini(String systemPrompt, String userPrompt) async* {
-    try {
-      final model = GenerativeModel(model: 'gemini-pro', apiKey: apiKey);
+    int retryCount = 0;
+    const maxRetries = 3;
+    const retryDelay = Duration(seconds: 2);
+    const models = ['gemini-1.5-flash', 'gemini-1.5-pro']; // Fallback models
+    int modelIndex = 0;
 
-      final prompt = '$systemPrompt\n\nUser request: $userPrompt';
-      final content = [Content.text(prompt)];
+    while (retryCount < maxRetries) {
+      try {
+        final model = GenerativeModel(
+          model: models[modelIndex],
+          apiKey: apiKey,
+        );
 
-      // Use streaming for better user experience
-      final response = model.generateContentStream(content);
+        debugPrint(
+          'Trying model: ${models[modelIndex]} (attempt ${retryCount + 1})',
+        );
 
-      await for (final chunk in response) {
-        final text = chunk.text;
-        if (text != null) {
-          yield text;
+        final prompt = '$systemPrompt\n\nUser request: $userPrompt';
+        final content = [Content.text(prompt)];
+
+        // Use streaming for better user experience
+        final response = model.generateContentStream(content);
+
+        await for (final chunk in response) {
+          final text = chunk.text;
+          if (text != null) {
+            yield text;
+          }
+        }
+
+        // If we get here, the request was successful
+        return;
+      } catch (e) {
+        retryCount++;
+        debugPrint(
+          'Gemini API attempt $retryCount failed with ${models[modelIndex]}: $e',
+        );
+
+        // Check if it's a server overload error (503)
+        if (e.toString().contains('503') ||
+            e.toString().contains('overloaded')) {
+          if (retryCount < maxRetries) {
+            // Try a different model if available
+            if (modelIndex < models.length - 1) {
+              modelIndex++;
+              debugPrint('Switching to fallback model: ${models[modelIndex]}');
+              yield 'Server busy, trying alternative model...';
+            } else {
+              debugPrint(
+                'Server overloaded, retrying in ${retryDelay.inSeconds} seconds... ($retryCount/$maxRetries)',
+              );
+              yield 'Server is busy, retrying... (attempt $retryCount/$maxRetries)';
+              await Future.delayed(retryDelay);
+              modelIndex = 0; // Reset to first model
+            }
+            continue;
+          } else {
+            yield 'Error: Gemini servers are currently overloaded. Please try again in a few minutes.';
+            return;
+          }
+        } else {
+          // For other errors, don't retry
+          throw Exception('Gemini API error: $e');
         }
       }
-    } catch (e) {
-      throw Exception('Gemini API error: $e');
     }
   }
 
   Future<Itinerary?> parseItineraryFromJson(String jsonString) async {
     try {
-      final data = jsonDecode(jsonString);
+      // Clean the JSON string by removing markdown code blocks
+      String cleanedJson = _extractJsonFromMarkdown(jsonString);
+
+      final data = jsonDecode(cleanedJson);
 
       // Validate required fields
       if (data['title'] == null ||
@@ -152,7 +205,43 @@ Return ONLY a valid JSON object in this exact format:
       );
     } catch (e) {
       debugPrint('Error parsing itinerary JSON: $e');
+      debugPrint('Raw response: $jsonString');
       return null;
     }
+  }
+
+  /// Extracts JSON content from markdown code blocks or returns the original string
+  String _extractJsonFromMarkdown(String text) {
+    // Remove any leading/trailing whitespace
+    text = text.trim();
+
+    debugPrint(
+      'Extracting JSON from response (first 200 chars): ${text.length > 200 ? "${text.substring(0, 200)}..." : text}',
+    );
+
+    // Check if the text starts with ```json or ``` and ends with ```
+    if (text.startsWith('```json')) {
+      // Extract content between ```json and ```
+      final startIndex = text.indexOf('```json') + 7; // 7 = length of "```json"
+      final endIndex = text.lastIndexOf('```');
+      if (endIndex > startIndex) {
+        final extracted = text.substring(startIndex, endIndex).trim();
+        debugPrint('Extracted JSON from ```json blocks');
+        return extracted;
+      }
+    } else if (text.startsWith('```')) {
+      // Extract content between ``` and ```
+      final startIndex = text.indexOf('```') + 3; // 3 = length of "```"
+      final endIndex = text.lastIndexOf('```');
+      if (endIndex > startIndex) {
+        final extracted = text.substring(startIndex, endIndex).trim();
+        debugPrint('Extracted JSON from ``` blocks');
+        return extracted;
+      }
+    }
+
+    // If no markdown code blocks found, return original text
+    debugPrint('No markdown blocks found, using original text');
+    return text;
   }
 }

@@ -5,6 +5,8 @@ import 'package:hive/hive.dart';
 import '../../models/itinerary_model.dart';
 import '../itinerary/itinerary_controller.dart';
 import '../../theme/app_theme.dart';
+import '../../services/location_service.dart';
+import '../auth/auth_controller.dart';
 
 class GeneratedItineraryPage extends ConsumerStatefulWidget {
   final String originalPrompt;
@@ -18,6 +20,10 @@ class GeneratedItineraryPage extends ConsumerStatefulWidget {
 
 class _GeneratedItineraryPageState
     extends ConsumerState<GeneratedItineraryPage> {
+  TravelInfo? _travelInfo;
+  bool _loadingTravelInfo = false;
+  final LocationService _locationService = LocationService();
+
   @override
   void initState() {
     super.initState();
@@ -29,9 +35,38 @@ class _GeneratedItineraryPageState
     });
   }
 
+  Future<void> _loadTravelInfo(Itinerary itinerary) async {
+    if (_travelInfo != null || _loadingTravelInfo) return;
+
+    setState(() {
+      _loadingTravelInfo = true;
+    });
+
+    try {
+      final destination = _locationService.extractDestinationFromItinerary(
+        itinerary,
+      );
+      final travelInfo = await _locationService.getTravelInfo(destination);
+
+      if (mounted) {
+        setState(() {
+          _travelInfo = travelInfo;
+          _loadingTravelInfo = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _loadingTravelInfo = false;
+        });
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(itineraryGenerationControllerProvider);
+    final user = ref.watch(authControllerProvider);
 
     return Scaffold(
       backgroundColor: AppTheme.backgroundWhite,
@@ -51,15 +86,23 @@ class _GeneratedItineraryPageState
           ),
         ),
         actions: [
-          CircleAvatar(
-            radius: 20,
-            backgroundColor: AppTheme.accentTeal,
-            child: Text(
-              'S', // You can get user initial here
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
+          InkWell(
+            onTap: () {
+              Navigator.pushNamed(context, '/profile');
+            },
+            borderRadius: BorderRadius.circular(20),
+            child: CircleAvatar(
+              radius: 20,
+              backgroundColor: AppTheme.accentTeal,
+              child: Text(
+                user?.displayName?.isNotEmpty == true
+                    ? user!.displayName![0].toUpperCase()
+                    : 'S',
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ),
           ),
@@ -172,6 +215,11 @@ class _GeneratedItineraryPageState
   }
 
   Widget _buildItineraryWidget(Itinerary itinerary) {
+    // Load travel info when itinerary is available
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loadTravelInfo(itinerary);
+    });
+
     return Column(
       children: [
         Expanded(
@@ -180,22 +228,18 @@ class _GeneratedItineraryPageState
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Title with emoji
-                Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        'Itinerary Created 🏝️',
-                        style: Theme.of(context).textTheme.headlineMedium
-                            ?.copyWith(
-                              fontWeight: FontWeight.bold,
-                              color: AppTheme.textPrimary,
-                            ),
-                      ),
+                // Title with emoji - centered
+                Center(
+                  child: Text(
+                    'Itinerary Created 🏝️',
+                    style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                      fontWeight: FontWeight.bold,
+                      color: AppTheme.textPrimary,
+                      fontSize: 28,
                     ),
-                  ],
+                  ),
                 ),
-                const SizedBox(height: 32),
+                const SizedBox(height: 40),
 
                 // Days
                 ...itinerary.days.asMap().entries.map((entry) {
@@ -204,8 +248,8 @@ class _GeneratedItineraryPageState
                   return _buildDaySection(dayIndex + 1, day);
                 }),
 
-                // Flight info at bottom
-                const SizedBox(height: 24),
+                // Map section
+                const SizedBox(height: 32),
                 Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
@@ -220,28 +264,32 @@ class _GeneratedItineraryPageState
                         color: Colors.red,
                         size: 20,
                       ),
-                      const SizedBox(width: 8),
+                      const SizedBox(width: 12),
                       InkWell(
-                        onTap: () => _openInMaps(''),
+                        onTap: () => _openInMaps(
+                          _travelInfo?.toLocation ?? 'Bali, Indonesia',
+                        ),
                         child: const Text(
                           'Open in maps',
                           style: TextStyle(
                             color: Colors.blue,
                             decoration: TextDecoration.underline,
                             fontSize: 16,
+                            fontWeight: FontWeight.w500,
                           ),
                         ),
                       ),
-                      const SizedBox(width: 16),
-                      const Text('📍'),
+                      const Spacer(),
+                      const Icon(
+                        Icons.open_in_new,
+                        color: Colors.blue,
+                        size: 16,
+                      ),
                     ],
                   ),
                 ),
                 const SizedBox(height: 16),
-                Text(
-                  'Mumbai to Bali, Indonesia | 11hrs 5mins',
-                  style: TextStyle(color: Colors.grey[600], fontSize: 14),
-                ),
+                _buildTravelInfoWidget(),
                 const SizedBox(height: 80), // Space for bottom buttons
               ],
             ),
@@ -316,43 +364,138 @@ class _GeneratedItineraryPageState
     );
   }
 
+  Widget _buildTravelInfoWidget() {
+    if (_loadingTravelInfo) {
+      return Row(
+        children: [
+          const SizedBox(
+            width: 16,
+            height: 16,
+            child: CircularProgressIndicator(
+              strokeWidth: 2,
+              valueColor: AlwaysStoppedAnimation<Color>(AppTheme.accentTeal),
+            ),
+          ),
+          const SizedBox(width: 8),
+          Text(
+            'Getting travel information...',
+            style: TextStyle(color: Colors.grey[600], fontSize: 14),
+          ),
+        ],
+      );
+    }
+
+    if (_travelInfo != null) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            '${_travelInfo!.fromLocation} to ${_travelInfo!.toLocation}',
+            style: TextStyle(
+              color: Colors.grey[600],
+              fontSize: 14,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          if (_travelInfo!.duration.isNotEmpty &&
+              !_travelInfo!.duration.contains('unavailable')) ...[
+            const SizedBox(height: 4),
+            Row(
+              children: [
+                Icon(
+                  _travelInfo!.mode == 'flight'
+                      ? Icons.flight
+                      : Icons.directions_car,
+                  size: 16,
+                  color: Colors.grey[600],
+                ),
+                const SizedBox(width: 4),
+                Text(
+                  '${_travelInfo!.duration}${_travelInfo!.distance.isNotEmpty && !_travelInfo!.distance.contains('unavailable') ? ' • ${_travelInfo!.distance}' : ''}',
+                  style: TextStyle(color: Colors.grey[600], fontSize: 14),
+                ),
+              ],
+            ),
+          ],
+        ],
+      );
+    }
+
+    // Fallback for when location services are not available
+    return Text(
+      'Travel information unavailable',
+      style: TextStyle(color: Colors.grey[600], fontSize: 14),
+    );
+  }
+
   Widget _buildDaySection(int dayNumber, ItineraryDay day) {
     return Container(
       margin: const EdgeInsets.only(bottom: 24),
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withValues(alpha: 0.08),
+            spreadRadius: 0,
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             'Day $dayNumber: ${day.summary}',
             style: const TextStyle(
-              fontSize: 18,
+              fontSize: 20,
               fontWeight: FontWeight.bold,
               color: AppTheme.textPrimary,
             ),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 16),
           ...day.items.map(
             (item) => Padding(
-              padding: const EdgeInsets.only(left: 0, bottom: 8),
+              padding: const EdgeInsets.only(bottom: 12),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Container(
-                    margin: const EdgeInsets.only(top: 8, right: 8),
-                    width: 4,
-                    height: 4,
+                    margin: const EdgeInsets.only(top: 10, right: 12),
+                    width: 6,
+                    height: 6,
                     decoration: const BoxDecoration(
                       color: AppTheme.textPrimary,
                       shape: BoxShape.circle,
                     ),
                   ),
                   Expanded(
-                    child: Text(
-                      '${item.time}: ${item.activity}${item.location.isNotEmpty ? ' at ${item.location}' : ''}',
-                      style: const TextStyle(
-                        fontSize: 16,
-                        color: AppTheme.textPrimary,
-                        height: 1.5,
+                    child: RichText(
+                      text: TextSpan(
+                        style: const TextStyle(
+                          fontSize: 16,
+                          color: AppTheme.textPrimary,
+                          height: 1.6,
+                        ),
+                        children: [
+                          if (item.time.isNotEmpty) ...[
+                            TextSpan(
+                              text: '${item.time}: ',
+                              style: const TextStyle(
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
+                          TextSpan(text: item.activity),
+                          if (item.location.isNotEmpty) ...[
+                            TextSpan(
+                              text: ' at ${item.location}',
+                              style: TextStyle(color: Colors.grey[600]),
+                            ),
+                          ],
+                        ],
                       ),
                     ),
                   ),
