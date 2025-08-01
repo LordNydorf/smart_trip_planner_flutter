@@ -26,18 +26,36 @@ class ConfigService {
 
   // Firebase API Keys
   static String get firebaseWebApiKey {
-    return dotenv.env['FIREBASE_WEB_API_KEY'] ??
-        'AIzaSyCi1ginTmZ8mFhoP5GHYbzMbuijEds_tc4';
+    final key = dotenv.env['FIREBASE_WEB_API_KEY'];
+    if (key == null || key.isEmpty) {
+      throw Exception(
+        'FIREBASE_WEB_API_KEY not found in environment variables. '
+        'Please check your .env file.',
+      );
+    }
+    return key;
   }
 
   static String get firebaseAndroidApiKey {
-    return dotenv.env['FIREBASE_ANDROID_API_KEY'] ??
-        'AIzaSyBX8IwcEF00JKednTMYvRKPtmqiVbQ-Qp4';
+    final key = dotenv.env['FIREBASE_ANDROID_API_KEY'];
+    if (key == null || key.isEmpty) {
+      throw Exception(
+        'FIREBASE_ANDROID_API_KEY not found in environment variables. '
+        'Please check your .env file.',
+      );
+    }
+    return key;
   }
 
   static String get firebaseIosApiKey {
-    return dotenv.env['FIREBASE_IOS_API_KEY'] ??
-        'AIzaSyBxVxP5sIVREaHBKpmovqZEpayLmL1hDeI';
+    final key = dotenv.env['FIREBASE_IOS_API_KEY'];
+    if (key == null || key.isEmpty) {
+      throw Exception(
+        'FIREBASE_IOS_API_KEY not found in environment variables. '
+        'Please check your .env file.',
+      );
+    }
+    return key;
   }
 
   static String get googleMapsApiKey {
@@ -49,6 +67,14 @@ class ConfigService {
       dotenv.env['GEMINI_API_KEY']?.isNotEmpty ?? false;
   static bool get hasOpenAiKey =>
       dotenv.env['OPENAI_API_KEY']?.isNotEmpty ?? false;
+  static bool get hasFirebaseWebKey =>
+      dotenv.env['FIREBASE_WEB_API_KEY']?.isNotEmpty ?? false;
+  static bool get hasFirebaseAndroidKey =>
+      dotenv.env['FIREBASE_ANDROID_API_KEY']?.isNotEmpty ?? false;
+  static bool get hasFirebaseIosKey =>
+      dotenv.env['FIREBASE_IOS_API_KEY']?.isNotEmpty ?? false;
+  static bool get hasGoogleMapsKey =>
+      dotenv.env['GOOGLE_MAPS_API_KEY']?.isNotEmpty ?? false;
 
   /// Get available providers based on configured API keys
   static List<String> get availableProviders {
